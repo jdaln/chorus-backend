@@ -1,0 +1,50 @@
+syntax = "proto3";
+package chorus;
+option go_package = ".;chorus";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+
+message GetWorkspaceRequest {
+	uint64 id = 1;
+}
+
+message ListWorkspacesRequest {}
+
+message ListWorkspacesResponse {
+	repeated Workspace workspaces = 1;
+}
+
+message ListWorkspacesByMemberRequest {
+	uint64 memberId = 1;
+}
+
+message ListWorkspacesByMemberResponse {
+	repeated Workspace workspaces = 1;
+}
+
+message CreateWorkspaceRequest {
+	Workspace workspace = 1;
+}
+
+message UpdateWorkspaceRequest {
+	Workspace workspace = 1;
+}
+
+message DeleteWorkspaceRequest {
+	uint64 id = 1;
+}
+
+message WorkspaceResponse {
+	Workspace workspace = 1;
+}
+
+service WorkspaceService {
+	rpc GetWorkspace(GetWorkspaceRequest) returns (WorkspaceResponse);
+	rpc ListWorkspaces(ListWorkspacesRequest) returns (ListWorkspacesResponse);
+	rpc ListWorkspacesByMember(ListWorkspacesByMemberRequest) returns (ListWorkspacesByMemberResponse);
+	rpc CreateWorkspace(CreateWorkspaceRequest) returns (WorkspaceResponse);
+	rpc UpdateWorkspace(UpdateWorkspaceRequest) returns (WorkspaceResponse);
+	rpc DeleteWorkspace(DeleteWorkspaceRequest) returns (google.protobuf.Empty);
+}

@@ -1,6 +1,6 @@
 syntax = "proto3";
-package templatebackend;
-option go_package = ".;templatebackend";
+package chorus;
+option go_package = ".;chorus";
 
 import "google/protobuf/timestamp.proto";
 

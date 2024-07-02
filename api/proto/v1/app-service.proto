@@ -1,0 +1,48 @@
+syntax = "proto3";
+package chorus;
+option go_package = ".;chorus";
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "google/protobuf/empty.proto";
+
+import "app.proto";
+
+message GetAppRequest {
+	uint64 workspaceId = 1;
+	uint64 appId = 2;
+}
+
+message ListAppsRequest {
+	uint64 workspaceId = 1;
+}
+
+message ListAppsResponse {
+	repeated App apps = 1;
+}
+
+message CreateAppRequest {
+	uint64 workspaceId = 1;
+	App app = 2;
+}
+
+message UpdateAppRequest {
+	uint64 workspaceId = 1;
+	App app = 2;
+}
+
+message DeleteAppRequest {
+	uint64 workspaceId = 1;
+}
+
+message AppResponse {
+    App app = 1;
+}
+
+service AppService {
+    rpc GetApp(GetAppRequest) returns (AppResponse);
+    rpc ListApps(ListAppsRequest) returns (ListAppsResponse);
+    rpc CreateApp(CreateAppRequest) returns (AppResponse);
+    rpc UpdateApp(UpdateAppRequest) returns (AppResponse);
+    rpc DeleteApp(DeleteAppRequest) returns (google.protobuf.Empty);
+}

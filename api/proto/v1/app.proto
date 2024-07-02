@@ -1,0 +1,63 @@
+syntax = "proto3";
+package chorus;
+option go_package = ".;chorus";
+
+import "google/protobuf/timestamp.proto";
+
+message App {
+    uint64 id = 1;
+
+    string name = 2;
+    string prettyName = 3;
+    string version = 4;
+    string description = 5;
+    string documentationUrl = 6;
+		Networking networking = 11;
+    repeated Interface interfaces = 7;
+
+    string repoTag = 8;
+    string status = 9;
+    Resources resources = 10;
+
+    uint64 workspaceId = 12;
+
+    google.protobuf.Timestamp createdAt = 13;
+    google.protobuf.Timestamp updatedAt = 14;
+}
+
+message Resources {
+  Recommended recommended = 1;
+  Requested requested = 2;
+	Allocated allocated = 3;
+}
+
+message Recommended {
+  uint32 cpu = 1; // in millicores
+  uint32 memory = 2; // in Gi
+	uint32 gpu = 3; // nb of gpu
+}
+
+message Requested {
+  uint32 cpu = 1; // in millicores
+  uint32 memory = 2;
+	uint32 gpu = 3; // nb of gpu
+}
+
+message Allocated {
+	uint32 cpu = 1; // in millicores
+	uint32 memory = 2;
+	uint32 gpu = 3; // nb of gpu
+}
+
+message Networking {
+	bool enabled = 1;
+	string endpoint = 2;
+}
+
+message Interface {
+	string id = 1;
+	string type = 2;
+	string endpoint = 3;
+	string description = 4;
+	string documentationUrl = 5;
+}
