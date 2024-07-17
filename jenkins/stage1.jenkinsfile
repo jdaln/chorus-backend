@@ -3,22 +3,20 @@ pipeline {
     kubernetes {
       cloud 'kubernetes-int'
       namespace 'jenkins-int-pipeline'
-      label "ci-ds-cicd-template-backend-stage1-${UUID.randomUUID().toString()}"
+      label "ci-chorus-cicd-chorus-stage1-${UUID.randomUUID().toString()}"
       yamlFile "jenkins/agents/unit.yaml"
     }
   }
   stages {
     stage('Build') {
       steps {
-        container(name: 'ds-ubuntu', shell: '/bin/bash') {
-          dir('ds-dev-ops') {
-            withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'PYPI_SERVER_USERNAME_PASSWORD', usernameVariable: 'PYPI_USERNAME', passwordVariable: 'PYPI_PASSWORD']]) {
-              checkout scm
-              sh '''
-                cd docker
-                ./build-stage1.sh
-              '''
-            }
+        container(name: 'chorus-ubuntu', shell: '/bin/bash') {
+          dir('chorus-dev-ops') {
+            checkout scm
+            sh '''
+              cd docker
+              ./build-stage1.sh
+            '''
           }
         }
       }

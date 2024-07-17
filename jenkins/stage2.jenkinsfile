@@ -3,13 +3,13 @@ pipeline {
     kubernetes {
       cloud 'kubernetes-int'
       namespace 'jenkins-int-pipeline'
-      label "ci-ds-cicd-template-backend-${UUID.randomUUID().toString()}"
+      label "ci-chorus-cicd-chorus-${UUID.randomUUID().toString()}"
       yamlFile "jenkins/agents/unit.yaml"
-      defaultContainer 'ds-ubuntu'
+      defaultContainer 'chorus-ubuntu'
     }
   }
   environment{
-    componentName = 'template-backend'
+    componentName = 'chorus'
   }
   stages {
     stage('Set version') {
@@ -21,9 +21,12 @@ pipeline {
       steps {
         sh '''#!/bin/bash -xe
           VERSION=$BRANCH_NAME-$BUILD_ID
+          VERSION=$(echo "$VERSION" | awk '{print tolower($0)}')
           IMAGE_TAG=$(echo -n ${VERSION//[\\/_]/-})
+          IMAGE_TAG=$(echo "$IMAGE_TAG" | awk '{print tolower($0)}')
           RELEASE_NAME="${componentName}-$VERSION"
           RELEASE_NAME=$(echo -n ${RELEASE_NAME//[\\/_]/-})
+          RELEASE_NAME=$(echo "$RELEASE_NAME" | awk '{print tolower($0)}')
 
           echo -n $RELEASE_NAME > $WORKSPACE/release_name
           echo -n $VERSION > $WORKSPACE/version
@@ -52,9 +55,11 @@ pipeline {
           MAJOR=$(echo $stripped | cut -d'.' -f1)
           MINOR=$(echo $stripped | cut -d'.' -f2)
           VERSION=v$MAJOR.$MINOR.$BUILD_ID
+          VERSION=$(echo "$VERSION" | awk '{print tolower($0)}')
           RELEASE_NAME="${componentName}-$VERSION"
           RELEASE_NAME=$(echo -n ${RELEASE_NAME//[\\/_]/-})
-
+          RELEASE_NAME=$(echo "$RELEASE_NAME" | awk '{print tolower($0)}')
+          
           echo $VERSION > $WORKSPACE/version
           echo ${VERSION//\\//-} > $WORKSPACE/image_tag
           echo -n $RELEASE_NAME > $WORKSPACE/release_name
@@ -70,33 +75,38 @@ pipeline {
 
     stage('Build') {
       steps {
-        container(name: 'ds-ubuntu', shell: '/bin/bash') {
-          dir('ds-dev-ops') {
-            withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'PYPI_SERVER_USERNAME_PASSWORD', usernameVariable: 'PYPI_USERNAME', passwordVariable: 'PYPI_PASSWORD']]) {
-              checkout scm
-              sh '''
-                cd docker
-                ./build-stage2.sh
-              '''
-            }
-          }
-        }
-      }
-    }
-
-    stage('Test') {
-      steps {
-        container(name: 'ds-ubuntu', shell: '/bin/bash') {
-          dir('ds-dev-ops') {
+        container(name: 'chorus-ubuntu', shell: '/bin/bash') {
+          dir('chorus-dev-ops') {
             checkout scm
             sh '''
-              #pip3 install -r requirements.txt
-              #python3 -m unittest discover ./src
+              PATH="$PATH:$PWD/scripts/tools/linux/bin"
+              # golangci-lint run
+              cd docker
+              ./build-stage2.sh
             '''
           }
         }
       }
     }
+
+    // stage('Test') {
+    //   agent {
+    //     docker {
+    //         image "registry.dip-dev.thehip.app/chorus-cicd-chorus:${IMAGE_TAG}"
+    //         registryUrl 'https://registry.dip-dev.thehip.app'
+    //         registryCredentialsId 'chorus_registry'
+    //         alwaysPull true
+    //     }
+    //   }
+    //   steps {
+    //     dir('chorus-dev-ops') {
+    //       checkout scm
+    //       sh '''
+    //         # /chorus/bin/chorus test
+    //       '''
+    //     }
+    //   }
+    // }
 
     stage('Test CI') {
       stages {
@@ -104,7 +114,7 @@ pipeline {
           stages {
             stage('deploy'){
               steps {
-                dir('ds-dev-ops') {
+                dir('chorus-dev-ops') {
                   checkout scm
                   sh '''
                     export env=ci
@@ -117,29 +127,34 @@ pipeline {
             stage('test') {
               agent {
                 docker {
-                    image "registry.dip-dev.thehip.app/ds-cicd-template-backend:${IMAGE_TAG}"
-                    registryUrl 'http://registry.dip-dev.thehip.app'
-                    registryCredentialsId 'dsr_registry'
+                    image "registry.dip-dev.thehip.app/chorus-cicd-chorus:${IMAGE_TAG}"
+                    registryUrl 'https://registry.dip-dev.thehip.app'
+                    registryCredentialsId 'chorus_registry'
                     alwaysPull true
+                    args '-ti --entrypoint /bin/bash'
                 }
               }
               steps {
-                dir('ds-dev-ops') {
-                  checkout scm
-                  withCredentials([
-                    file([credentialsId: 'Kubernetes-INT-microk8s-admin-config', variable: "KUBECONFIG"])
-                  ]){
-                    sh """
-                      echo "looking for pod name"
-                      POD_NAME=\$(kubectl get pods -n ci -l app=deployment-backend-${RELEASE_NAME} -o jsonpath="{.items[0].metadata.name}")
-                      echo "waiting 60sec for pod \$POD_NAME to be ready"
-                      kubectl wait --for=condition=ready pod \$POD_NAME -n ci --timeout=60s
-                      kubectl -n ci port-forward service/service-backend-${RELEASE_NAME} 5000:5000 &
-                      kubectl -n ci logs -f pod/\$POD_NAME &
-                      sleep 20
-                      python3 -m unittest discover ./src/tests/acceptance
-                    """
-                  }
+                dir('chorus-dev-ops') {
+                  sh """
+                    echo hello
+                  """
+                  // checkout scm
+                  // withCredentials([
+                  //   file([credentialsId: 'Kubernetes-INT-microk8s-admin-config', variable: "KUBECONFIG"]),
+                  //   file([credentialsId: 'registry-auth-docker-config', variable: "DOCKER_CONFIG"]),
+                  // ]){
+                  //   sh """
+                  //     // echo "looking for pod name"
+                  //     // POD_NAME=\$(kubectl get pods -n ci -l app=deployment-backend-${RELEASE_NAME} -o jsonpath="{.items[0].metadata.name}")
+                  //     // echo "waiting 60sec for pod \$POD_NAME to be ready"
+                  //     // kubectl wait --for=condition=ready pod \$POD_NAME -n ci --timeout=60s
+                  //     // kubectl -n ci port-forward service/service-backend-${RELEASE_NAME} 5000:5000 &
+                  //     // kubectl -n ci logs -f pod/\$POD_NAME &
+                  //     // sleep 20
+                  //     // python3 -m unittest discover ./src/tests/acceptance
+                  //   """
+                  // }
                 }
               }
             }
@@ -167,8 +182,8 @@ pipeline {
       stages {
         stage('Deploy') {
           steps {
-            container(name: 'ds-ubuntu', shell: '/bin/bash') {
-              dir('ds-dev-ops') {
+            container(name: 'chorus-ubuntu', shell: '/bin/bash') {
+              dir('chorus-dev-ops') {
                 checkout scm
                 sh """
                   export env=int

@@ -1,0 +1,286 @@
+swagger: "2.0"
+info:
+  title: chorus workbench service
+  version: "1.0"
+  contact:
+    name: chorus workbench service
+    url: https://github.com/CHORUS-TRE/chorus-backend
+    email: dev@chorus-tre.ch
+tags:
+  - name: WorkbenchService
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /api/rest/v1/workbenchs:
+    get:
+      summary: List workbenchs
+      description: This endpoint returns a list of workbenchs
+      operationId: WorkbenchService_ListWorkbenchs
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/chorusListWorkbenchsReply'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: pagination.offset
+          description: Optionally offset the number of results
+          in: query
+          required: false
+          type: integer
+          format: int64
+        - name: pagination.limit
+          description: Optionally limit the number of results (between 1 and 500)
+          in: query
+          required: false
+          type: integer
+          format: int64
+        - name: pagination.sort.order
+          in: query
+          required: false
+          type: string
+        - name: pagination.sort.type
+          in: query
+          required: false
+          type: string
+        - name: pagination.query
+          description: Optionally filter the results
+          in: query
+          required: false
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+          x-example:
+            - user_id=9999
+            - status=STATUS_CREATED,STATUS_CLOSED
+      tags:
+        - WorkbenchService
+    post:
+      summary: Create a workbench
+      description: This endpoint creates a workbench
+      operationId: WorkbenchService_CreateWorkbench
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/chorusCreateWorkbenchReply'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/chorusWorkbench'
+      tags:
+        - WorkbenchService
+    put:
+      summary: Update a workbench
+      description: This endpoint updates a workbench
+      operationId: WorkbenchService_UpdateWorkbench
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/chorusUpdateWorkbenchReply'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/chorusUpdateWorkbenchRequest'
+      tags:
+        - WorkbenchService
+  /api/rest/v1/workbenchs/{id}:
+    get:
+      summary: Get a workbench
+      description: This endpoint returns a workbench
+      operationId: WorkbenchService_GetWorkbench
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/chorusGetWorkbenchReply'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+          format: uint64
+      tags:
+        - WorkbenchService
+    delete:
+      summary: Delete a workbench
+      description: This endpoint deletes a workbench
+      operationId: WorkbenchService_DeleteWorkbench
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/chorusDeleteWorkbenchReply'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+          format: uint64
+      tags:
+        - WorkbenchService
+definitions:
+  chorusCreateWorkbenchReply:
+    type: object
+    properties:
+      result:
+        $ref: '#/definitions/chorusCreateWorkbenchResult'
+  chorusCreateWorkbenchResult:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uint64
+  chorusDeleteWorkbenchReply:
+    type: object
+    properties:
+      result:
+        $ref: '#/definitions/chorusDeleteWorkbenchResult'
+  chorusDeleteWorkbenchResult:
+    type: object
+  chorusGetWorkbenchReply:
+    type: object
+    properties:
+      result:
+        $ref: '#/definitions/chorusGetWorkbenchResult'
+  chorusGetWorkbenchResult:
+    type: object
+    properties:
+      workbench:
+        $ref: '#/definitions/chorusWorkbench'
+  chorusListWorkbenchsReply:
+    type: object
+    properties:
+      result:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/chorusWorkbench'
+  chorusPaginationQuery:
+    type: object
+    properties:
+      offset:
+        type: integer
+        format: int64
+        description: Optionally offset the number of results
+      limit:
+        type: integer
+        format: int64
+        description: Optionally limit the number of results (between 1 and 500)
+      sort:
+        $ref: '#/definitions/chorusSort'
+        description: Optionally sort the results
+      query:
+        type: array
+        items:
+          type: string
+        description: Optionally filter the results
+        x-example:
+          - user_id=9999
+          - status=STATUS_CREATED,STATUS_CLOSED
+  chorusSort:
+    type: object
+    properties:
+      order:
+        type: string
+      type:
+        type: string
+  chorusUpdateWorkbenchReply:
+    type: object
+    properties:
+      result:
+        $ref: '#/definitions/chorusUpdateWorkbenchResult'
+  chorusUpdateWorkbenchRequest:
+    type: object
+    properties:
+      workbench:
+        $ref: '#/definitions/chorusWorkbench'
+  chorusUpdateWorkbenchResult:
+    type: object
+  chorusWorkbench:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uint64
+      tenantId:
+        type: string
+        format: uint64
+      userId:
+        type: string
+        format: uint64
+      workspaceId:
+        type: string
+        format: uint64
+      name:
+        type: string
+      shortName:
+        type: string
+      description:
+        type: string
+      status:
+        type: string
+      appInsanceIds:
+        type: array
+        items:
+          type: string
+          format: uint64
+      appInstances:
+        type: array
+        items:
+          type: string
+          format: uint64
+      createdAt:
+        type: string
+        format: date-time
+      updatedAt:
+        type: string
+        format: date-time
+  protobufAny:
+    type: object
+    properties:
+      '@type':
+        type: string
+    additionalProperties: {}
+  rpcStatus:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      details:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/protobufAny'
