@@ -26,5 +26,5 @@ CREATE TABLE public.workbenchs (
 -- +migrate StatementEnd
 
 -- +migrate StatementBegin
-ALTER TABLE app_instances ADD COLUMN workbenchid BIGINT NOT NULL DEFAULT 0 REFERENCES workbenchs(id);
+ALTER TABLE app_instances ADD COLUMN workbenchid BIGINT NOT NULL REFERENCES workbenchs(id);
 -- +migrate StatementEnd
