@@ -136,10 +136,10 @@ pipeline {
                 }
               }
               steps {
-                dir('chorus-dev-ops') {
-                  sh """
-                    echo hello
-                  """
+                sh """
+                  echo hello
+                """
+                // dir('chorus-dev-ops') {
                   // checkout scm
                   // withCredentials([
                   //   file([credentialsId: 'Kubernetes-INT-microk8s-admin-config', variable: "KUBECONFIG"]),
@@ -156,7 +156,7 @@ pipeline {
                   //     // python3 -m unittest discover ./src/tests/acceptance
                   //   """
                   // }
-                }
+                // }
               }
             }
           }
