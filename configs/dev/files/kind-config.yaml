@@ -6,7 +6,7 @@ networking:
 nodes:
 - role: control-plane
   extraMounts:
-  - hostPath: /home/localadmin/chuv/chorus/chorus-backend/configs/dev/files/kind-pregenerated-certs
+  - hostPath: configs/dev/files/kind-pregenerated-certs
     containerPath: /mnt/kind-pregenerated-certs
   kubeadmConfigPatches:
   - |
