@@ -211,7 +211,6 @@ pipeline {
         stage('tag') {
           steps {
             container(name: 'chorus-ubuntu', shell: '/bin/bash') {
-              sshagent(credentials:['chorus_git']) {
                 dir('chorus-dev-ops') {
                   checkout scm
                   sh """
@@ -219,7 +218,8 @@ pipeline {
                     git push origin $VERSION
                   """
                 }
-              }
+              // sshagent(credentials:['chorus_git']) {
+              // }
             }
           }
         }
