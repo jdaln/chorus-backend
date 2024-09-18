@@ -214,6 +214,7 @@ pipeline {
                 dir('chorus-dev-ops') {
                   checkout scm
                   sh """
+                    git config --add safe.directory "$PWD"
                     git tag $VERSION
                     git push origin $VERSION
                   """
