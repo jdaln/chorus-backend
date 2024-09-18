@@ -21,10 +21,10 @@ storage:
     chorus:
       type: postgres
       migration_table_name: tt_migrations
-      host: localhost
+      host: chorus-dev-backend-postgresql
       port: 5432
-      username: admin
-      password: password
+      username: chorus-dev-user
+      password: "{{ .postgres_password }}"
       database: chorus
       max_connections: 10
       max_lifetime: 10s

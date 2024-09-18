@@ -40,6 +40,9 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1000
 
+deployment:
+  postgresEnabled: true
+
 service:
   type: ClusterIP
   port: 5000

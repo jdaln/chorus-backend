@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: deployment-backend-{{ include "chart.nameid" . }}
+  name: deployment-backend-{{ include "backend.nameid" . }}
   labels:
-    app: deployment-backend-{{ include "chart.nameid" . }}
-    nameid: {{ include "chart.nameid" . }}
+    app: deployment-backend-{{ include "backend.nameid" . }}
+    nameid: {{ include "backend.nameid" . }}
     version: {{ .Values.version }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: deployment-backend-{{ include "chart.nameid" . }}
+      app: deployment-backend-{{ include "backend.nameid" . }}
   template:
     metadata:
       labels:
-        app: deployment-backend-{{ include "chart.nameid" . }}
+        app: deployment-backend-{{ include "backend.nameid" . }}
     spec:
       containers:
-      - name: deployment-backend-{{ include "chart.nameid" . }}
+      - name: deployment-backend-{{ include "backend.nameid" . }}
         image: {{ .Values.image }}
         ports:
         - containerPort: 5000
@@ -26,6 +26,7 @@ spec:
           mountPath: /chorus/conf
         command: ["/chorus/bin/chorus"]
         args: ["start", "--config", "/chorus/conf/config.yaml"]
+      {{- if .Values.deployment.postrgresEnabled }}
       - name: postgres
         image: postgres
         ports:
@@ -37,12 +38,13 @@ spec:
           value: password
         - name: POSTGRES_DB
           value: chorus
+      {{- end }}
       imagePullSecrets:
       - name: registry-auth
       volumes:
       - name: backend-config
         secret:
-          secretName: backend-config-{{ include "chart.nameid" . }}
+          secretName: backend-config-{{ include "backend.nameid" . }}
           items:
           - key: config.yaml
             path: config.yaml

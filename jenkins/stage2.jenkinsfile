@@ -184,14 +184,41 @@ pipeline {
         stage('Deploy') {
           steps {
             container(name: 'chorus-ubuntu', shell: '/bin/bash') {
-              dir('chorus-dev-ops') {
-                checkout scm
-                sh """
-                  export env=int
-                  export RELEASE_NAME="${componentName}-int-master"
-                  cd deploy
-                  ./deploy.sh
-                """
+              sshagent(credentials:['chorus_git']) {
+                dir('chorus-dev-ops') {
+                  checkout scm
+                  sh """
+                    export env=int
+                    export RELEASE_NAME="${componentName}-int-master"
+                    cd deploy
+                    ./deploy.sh
+                    git tag $VERSION
+                    git push origin $VERSION
+                  """
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    stage('test-feat-deploy') {
+      when {
+        branch 'feat/deploy'
+      }
+      stages {
+        stage('tag') {
+          steps {
+            container(name: 'chorus-ubuntu', shell: '/bin/bash') {
+              sshagent(credentials:['chorus_git']) {
+                dir('chorus-dev-ops') {
+                  checkout scm
+                  sh """
+                    git tag $VERSION
+                    git push origin $VERSION
+                  """
+                }
               }
             }
           }

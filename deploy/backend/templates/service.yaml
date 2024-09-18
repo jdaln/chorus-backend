@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: service-backend-{{ include "chart.nameid" . }}
+  name: service-backend-{{ include "backend.nameid" . }}
   labels:
     version: {{ .Values.version }}
-    nameid: {{ include "chart.nameid" . }}
+    nameid: {{ include "backend.nameid" . }}
 spec:
   selector:
-    app: deployment-backend-{{ include "chart.nameid" . }}
+    app: deployment-backend-{{ include "backend.nameid" . }}
   ports:
     - protocol: TCP
       port: {{ .Values.service.port }}
