@@ -53,9 +53,20 @@ func NewClient(cfg config.Config) (*client, error) {
 }
 
 func (c *client) getConfig(namespace string) (*helmaction.Configuration, error) {
+	if c.cfg.Clients.HelmClient.KubeConfig != "" {
+		return c.getConfigFromKubeConfig(namespace)
+	}
+	if c.cfg.Clients.HelmClient.Token != "" {
+		return c.getConfigFromServiceAccount(namespace)
+	}
+
+	return nil, errors.New("no config for helm client found")
+}
+
+func (c *client) getConfigFromKubeConfig(namespace string) (*helmaction.Configuration, error) {
 	config, err := clientcmd.Load(([]byte)(c.cfg.Clients.HelmClient.KubeConfig))
 	if err != nil {
-		return nil, fmt.Errorf("Error loading kubeconfig: %w", err)
+		return nil, fmt.Errorf("error loading kubeconfig: %w", err)
 	}
 
 	clientConfig := clientcmd.NewDefaultClientConfig(*config, &clientcmd.ConfigOverrides{})
@@ -75,11 +86,40 @@ func (c *client) getConfig(namespace string) (*helmaction.Configuration, error) 
 
 	actionConfig := new(helmaction.Configuration)
 	if err := actionConfig.Init(configFlags, namespace, "secret", debug); err != nil {
-		return nil, fmt.Errorf("Error initializing Helm configuration: %w", err)
+		return nil, fmt.Errorf("error initializing Helm configuration: %w", err)
 	}
 
 	return actionConfig, nil
 
+}
+
+func (c *client) getConfigFromServiceAccount(namespace string) (*helmaction.Configuration, error) {
+	token := c.cfg.Clients.HelmClient.Token
+	caCert := c.cfg.Clients.HelmClient.CA
+	apiServer := c.cfg.Clients.HelmClient.APIServer
+
+	restConfig := &rest.Config{
+		Host:        apiServer,
+		BearerToken: token,
+		TLSClientConfig: rest.TLSClientConfig{
+			CAData: []byte(caCert),
+		},
+	}
+
+	configFlags := &genericclioptions.ConfigFlags{
+		Namespace: &namespace,
+	}
+
+	configFlags.WrapConfigFn = func(cfg *rest.Config) *rest.Config {
+		return restConfig
+	}
+
+	actionConfig := new(helmaction.Configuration)
+	if err := actionConfig.Init(configFlags, namespace, "secret", debug); err != nil {
+		return nil, fmt.Errorf("error initializing Helm configuration: %w", err)
+	}
+
+	return actionConfig, nil
 }
 
 func (c *client) CreatePortForward(namespace, serviceName string) (uint16, chan struct{}, error) {
@@ -106,7 +146,7 @@ func (c *client) CreatePortForward(namespace, serviceName string) (uint16, chan 
 	}
 
 	if len(pods.Items) == 0 {
-		return 0, nil, errors.New("No pods found for the service")
+		return 0, nil, errors.New("no pods found for the service")
 	}
 
 	podName := pods.Items[0].Name

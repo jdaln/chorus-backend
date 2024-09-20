@@ -8,3 +8,5 @@ metadata:
 type: Opaque
 data:
   config.yaml: {{ include "backend.main" . | b64enc }}
+  privkey.pem: "{{ .Files.Get "files/keys/chorus_privkey.pem" | b64enc }}"
+  pubkey.pem: "{{ .Files.Get "files/keys/chorus_pubkey.pem" | b64enc}}"

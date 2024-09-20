@@ -39,6 +39,9 @@ spec:
         - name: POSTGRES_DB
           value: chorus
       {{- end }}
+      {{- if .Values.deployment.serviceAccountName }}
+      serviceAccountName: {{ .Values.deployment.serviceAccountName }}
+      {{- end }}
       imagePullSecrets:
       - name: registry-auth
       volumes:
@@ -48,3 +51,7 @@ spec:
           items:
           - key: config.yaml
             path: config.yaml
+          - key: privkey.pem
+            path: privkey.pem
+          - key: pubkey.pem
+            path: pubkey.pem

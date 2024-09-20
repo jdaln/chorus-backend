@@ -1,6 +1,3 @@
-{{/*
-Expand the name of the chart.
-*/}}
 {{- define "backend.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
@@ -10,12 +7,22 @@ Expand the name of the chart.
 {{- end }}
 
 {{- define "backend.main" -}}
+    {{- $passphrase := "" }}
+    {{- if and (.Values.aesPassphrase) (ne .Values.aesPassphrase "") }}
+        {{- $passphrase = .Values.aesPassphrase }}
+    {{- else }}
+        {{- $namespace := "backend" }}
+        {{- $secretName := "configaespassphrase-argodev" }}
+        {{- $secretKey := "passphrase" }}
+        {{- $secret := lookup "v1" "Secret" $namespace $secretName }}
+        {{- $passphrase = $secret.data.passphrase | b64dec }}
+    {{- end }}
 
     {{- $encryptedFile := .Files.Get "files/secrets.yaml.enc" }}
     {{- $salt := $encryptedFile | substr 0 64 }}
     {{- $remainingFile := $encryptedFile | substr 64 -1 }}
     {{- $ivAndEncryptedData := $remainingFile | b64enc }}
-    {{- $passphraseWithSalt :=  (printf "%s%s" .Values.aesPassphrase $salt) | sha256sum | substr 0 32 }}
+    {{- $passphraseWithSalt :=  (printf "%s%s" $passphrase $salt) | sha256sum | substr 0 32 }}
     {{- $secrets := $ivAndEncryptedData | decryptAES $passphraseWithSalt | fromYaml -}}
 
     {{- $_ := set $secrets "Template" $.Template }}

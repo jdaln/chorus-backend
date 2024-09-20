@@ -111,7 +111,11 @@ type (
 	}
 
 	HelmClient struct {
-		KubeConfig string `yaml:"kube_config,omitempty"`
+		KubeConfig string `yaml:"kube_config,omitempty"` // either provide a kubeconfig
+
+		Token     string `yaml:"token,omitempty"`      // either a service account token
+		CA        string `yaml:"ca,omitempty"`         // and service account ca
+		APIServer string `yaml:"api_server,omitempty"` // and service account api server
 	}
 
 	Tenant struct {

@@ -5,8 +5,15 @@ metadata:
   name: ingress-backend-{{ include "backend.nameid" . }}
   annotations:
     kubernetes.io/ingress.class: "public"
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: 20g
 spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - {{ .Values.ingress.host }}
+    secretName: backend-ingress-tls
   rules:
   - host: {{ .Values.ingress.host }}
     http:
@@ -17,5 +24,6 @@ spec:
           service:
             name: service-backend-{{ include "backend.nameid" . }}
             port:
-              number: 16080
+              number: {{ .Values.service.port }}
+
 {{- end }}
