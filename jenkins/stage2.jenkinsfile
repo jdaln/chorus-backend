@@ -200,16 +200,14 @@ pipeline {
         stage('Deploy') {
           steps {
             container(name: 'chorus-ubuntu', shell: '/bin/bash') {
-              sshagent(credentials:['chorus_git']) {
-                dir('chorus-dev-ops') {
-                  checkout scm
-                  sh """
-                    export env=int
-                    export RELEASE_NAME="${componentName}-int-master"
-                    cd deploy
-                    ./deploy.sh
-                  """
-                }
+              dir('chorus-dev-ops') {
+                checkout scm
+                sh """
+                  export env=int
+                  export RELEASE_NAME="${componentName}-int-master"
+                  cd deploy
+                  ./deploy.sh
+                """
               }
             }
           }
