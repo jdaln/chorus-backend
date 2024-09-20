@@ -1,7 +1,6 @@
 ingress:
   enabled: true
   host: "backend.dev.chorus-tre.ch"
-  loadBalancerIP: 86.119.30.38
 
 service:
   port: 5000
