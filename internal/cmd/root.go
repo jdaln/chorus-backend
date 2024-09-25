@@ -27,6 +27,7 @@ const (
 )
 
 var configFilename = ""
+var configOverrideFilename = ""
 
 var rootCmd = &cobra.Command{
 	Use:   componentName,
@@ -45,7 +46,13 @@ func init() {
 		&configFilename,
 		"config",
 		"",
-		"config file (default is ./configs/dev/chorus.yml)",
+		"config file path (default is ./configs/dev/chorus.yaml)",
+	)
+	rootCmd.PersistentFlags().StringVar(
+		&configOverrideFilename,
+		"config-override",
+		"",
+		"config override file path (useful for secrets)",
 	)
 	rootCmd.PersistentFlags().StringVar(
 		&component.RuntimeEnvironment,
@@ -76,6 +83,16 @@ func initConfig() {
 	} else {
 		fmt.Fprintf(os.Stderr, "Error reading config file %v: %v", viper.ConfigFileUsed(), err)
 		os.Exit(1)
+	}
+
+	if configOverrideFilename != "" {
+		viper.SetConfigFile(configOverrideFilename)
+		if err := viper.MergeInConfig(); err == nil {
+			fmt.Println("Using additional config file:", viper.ConfigFileUsed())
+		} else {
+			fmt.Fprintf(os.Stderr, "Error merging config file %v: %v", viper.ConfigFileUsed(), err)
+			os.Exit(1)
+		}
 	}
 }
 
