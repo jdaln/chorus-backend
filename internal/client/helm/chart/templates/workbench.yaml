@@ -9,4 +9,7 @@ spec:
     {{- range .Values.apps }}
     - name: {{ .name }}
       image: {{ .image }}
+      {{- if .shmSize }}
+      shmSize: {{ .shmSize }}
+      {{- end }}
     {{- end }}
